@@ -1,9 +1,12 @@
-from app.models.image_model import ImageModel
-from app.services.ml_prediction_service import ml_service
+from app.models.repositories.image_repository import ImageRepository
+from app.models.services.ml_prediction_service import ml_service
 
 
 class ImageController:
     """Controller class containing business logic for image operations"""
+    
+    # Initialize the repository
+    _repository = ImageRepository()
     
     @staticmethod
     def create_image(data):
@@ -44,8 +47,8 @@ class ImageController:
         #         'success': False
         #     }, 400
         
-        # Create image using model
-        created_image = ImageModel.create_image(name, url)
+        # Create image using repository
+        created_image = ImageController._repository.create_image(name, url)
         
         if created_image:
             return {
@@ -67,7 +70,7 @@ class ImageController:
         Returns:
             tuple: (result_dict, status_code)
         """
-        images = ImageModel.get_all_images()
+        images = ImageController._repository.get_all_images()
         
         return {
             'message': 'Images retrieved successfully',
@@ -93,7 +96,7 @@ class ImageController:
                 'success': False
             }, 400
         
-        image = ImageModel.get_image_by_id(image_id)
+        image = ImageController._repository.get_image_by_id(image_id)
         
         if image:
             return {
@@ -199,7 +202,7 @@ class ImageController:
             
             if prediction_result['success']:
                 # Save prediction results to database information column
-                updated_image = ImageModel.update_image_information(image_id, prediction_result)
+                updated_image = ImageController._repository.update_image_information(image_id, prediction_result)
                 
                 if updated_image:
                     return {

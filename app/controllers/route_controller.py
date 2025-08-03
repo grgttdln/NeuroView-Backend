@@ -149,32 +149,6 @@ def _handle_invalid_post_request():
     }), 400
 
 
-@image_bp.route('/predict', methods=['POST'])
-def predict_brain_tumor():
-    """
-    Endpoint for brain tumor prediction from uploaded image
-    
-    POST requests:
-    - multipart/form-data with 'file' -> predict brain tumor type
-    - multipart/form-data with 'file' and 'image_id' -> predict and save results to database
-    
-    Returns:
-        JSON response with prediction results
-    """
-    return _handle_predict_brain_tumor()
-
-
-@image_bp.route('/model-info', methods=['GET'])
-def get_model_info():
-    """
-    Endpoint for getting ML model information
-    
-    Returns:
-        JSON response with model metadata
-    """
-    return _handle_get_model_info()
-
-
 @image_bp.route('/auto', methods=['GET', 'POST'])
 def auto_detect_api():
     """
@@ -182,50 +156,51 @@ def auto_detect_api():
     based on request method, parameters, and data type.
     
     GET requests:
-    - ?action=health -> health check
-    - ?action=model-info -> get ML model information
-    - ?id=<uuid> -> get specific image
-    - default -> get all images
+    - default -> get all images (health check and model info are handled by POST with specific data)
     
     POST requests:
-    - multipart/form-data with 'file' + ?action=predict -> brain tumor prediction
     - multipart/form-data with 'file' -> upload image with automatic prediction and save to database
+    - multipart/form-data with 'file' and 'image_id' -> predict and save results to database
     - application/json with name/url -> create image
+    - application/json with {"action": "health"} -> health check
+    - application/json with {"action": "model-info"} -> get ML model information
     
     Returns:
         JSON response based on detected operation
     """
     try:
         if request.method == 'GET':
-            # Handle GET requests
-            action = request.args.get('action')
-            image_id = request.args.get('id')
-            
-            if action == 'health':
-                return _handle_health_check()
-            elif action == 'model-info':
-                return _handle_get_model_info()
-            elif image_id:
-                return _handle_get_image_by_id(image_id)
-            else:
-                return _handle_get_all_images()
+            # Handle GET requests - default to get all images
+            return _handle_get_all_images()
         
         elif request.method == 'POST':
-            # Handle POST requests
-            action = request.args.get('action')
+            # Handle POST requests based on content type and data
+            
+            # Check if it's JSON data
+            if request.is_json and request.get_json():
+                data = request.get_json()
+                
+                # Check for special actions
+                if data.get('action') == 'health':
+                    return _handle_health_check()
+                elif data.get('action') == 'model-info':
+                    return _handle_get_model_info()
+                elif data.get('id'):
+                    # If JSON contains an ID, treat as get specific image
+                    return _handle_get_image_by_id(data.get('id'))
+                else:
+                    # Regular image creation
+                    return _handle_create_image()
             
             # Check if it's a file upload (multipart/form-data with file)
-            if 'file' in request.files and request.files['file'].filename != '':
-                # Check if it's a prediction request
-                if action == 'predict':
+            elif 'file' in request.files and request.files['file'].filename != '':
+                # Check if image_id is provided for prediction only
+                image_id = request.form.get('image_id')
+                if image_id:
                     return _handle_predict_brain_tumor()
                 else:
-                    # Default to upload
+                    # Default to upload with prediction
                     return _handle_upload_image()
-            
-            # Check if it's JSON data for creating an image
-            elif request.is_json and request.get_json():
-                return _handle_create_image()
             
             else:
                 return _handle_invalid_post_request()

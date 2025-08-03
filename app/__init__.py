@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from app.views.image_views import image_bp
+from app.controllers.route_controller import image_bp
 
 
 def create_app():

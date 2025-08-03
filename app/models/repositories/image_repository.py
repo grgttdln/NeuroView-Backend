@@ -1,13 +1,13 @@
 from app.config.database import supabase_config
+from app.models.interfaces.image_interface import ImageInterface
 import requests
-import json
+from typing import Dict, List, Optional, Any
 
 
-class ImageModel:
-    """Model class for handling image data operations using Supabase REST API"""
+class ImageRepository(ImageInterface):
+    """Repository class for handling image data operations using Supabase REST API"""
     
-    @staticmethod
-    def create_image(name, url):
+    def create_image(self, name: str, url: str) -> Optional[Dict[str, Any]]:
         """
         Create a new image record using Supabase REST API
         
@@ -16,7 +16,7 @@ class ImageModel:
             url (str): URL of the image
             
         Returns:
-            dict: Created image data or None if failed
+            Optional[Dict[str, Any]]: Created image data or None if failed
         """
         try:
             # Prepare data for insertion
@@ -47,13 +47,12 @@ class ImageModel:
             print(f"Unexpected error in create_image: {e}")
             return None
     
-    @staticmethod
-    def get_all_images():
+    def get_all_images(self) -> List[Dict[str, Any]]:
         """
         Retrieve all images using Supabase REST API
         
         Returns:
-            list: List of image dictionaries or empty list if failed
+            List[Dict[str, Any]]: List of image dictionaries or empty list if failed
         """
         try:
             # Make GET request to Supabase with ordering
@@ -75,8 +74,7 @@ class ImageModel:
             print(f"Unexpected error in get_all_images: {e}")
             return []
     
-    @staticmethod
-    def get_image_by_id(image_id):
+    def get_image_by_id(self, image_id: str) -> Optional[Dict[str, Any]]:
         """
         Retrieve a specific image by ID using Supabase REST API
         
@@ -84,7 +82,7 @@ class ImageModel:
             image_id (str): UUID of the image
             
         Returns:
-            dict: Image data or None if not found
+            Optional[Dict[str, Any]]: Image data or None if not found
         """
         try:
             # Make GET request to Supabase with ID filter
@@ -107,17 +105,16 @@ class ImageModel:
             print(f"Unexpected error in get_image_by_id: {e}")
             return None
     
-    @staticmethod
-    def update_image_information(image_id, prediction_data):
+    def update_image_information(self, image_id: str, prediction_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
         Update the information column of an image with prediction data in JSON format
         
         Args:
             image_id (str): UUID of the image
-            prediction_data (dict): Prediction results to save in JSON format
+            prediction_data (Dict[str, Any]): Prediction results to save in JSON format
             
         Returns:
-            dict: Updated image data or None if failed
+            Optional[Dict[str, Any]]: Updated image data or None if failed
         """
         try:
             # Prepare data for update

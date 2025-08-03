@@ -2,13 +2,15 @@ import os
 import uuid
 import requests
 from werkzeug.utils import secure_filename
-from app.models.image_model import ImageModel
+from app.models.repositories.image_repository import ImageRepository
 
 
 class UploadController:
     """Controller class for handling file uploads to Supabase Storage"""
     
     def __init__(self):
+        # Initialize repository
+        self._repository = ImageRepository()
         # Initialize Supabase configuration
         self.supabase_url = os.getenv('SUPABASE_URL')
         self.supabase_key = os.getenv('SUPABASE_ANON_KEY')
@@ -85,7 +87,7 @@ class UploadController:
             image_name = name if name else secure_name
             
             # Create database record
-            created_image = ImageModel.create_image(image_name, public_url)
+            created_image = self._repository.create_image(image_name, public_url)
             
             if created_image:
                 return {

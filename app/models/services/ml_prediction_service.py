@@ -23,7 +23,7 @@ class MLPredictionService:
     def _load_model(self):
         """Load the pre-trained neural network model"""
         try:
-            model_path = os.path.join(os.path.dirname(__file__), '..', 'ml_models', 'best_brain_nn_model.pkl')
+            model_path = os.path.join(os.path.dirname(__file__), '..', '..', 'ml_models', 'best_brain_nn_model.pkl')
             model_path = os.path.abspath(model_path)
             
             with open(model_path, "rb") as f:
